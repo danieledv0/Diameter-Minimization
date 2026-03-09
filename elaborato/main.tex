@@ -1,0 +1,67 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Template Elaborato Finale DISI - UniTN
+% Adattato per BDM-DC (Diameter Minimization)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[epsfig,a4paper,11pt,titlepage,twoside,openany]{book}
+\usepackage{epsfig}
+\usepackage{plain}
+\usepackage{setspace}
+\usepackage[paperheight=29.7cm,paperwidth=21cm,outer=1.5cm,inner=2.5cm,top=2cm,bottom=2cm]{geometry} 
+\usepackage{titlesec} 
+\usepackage[utf8]{inputenc} % Utilizzo inputenc standard per compatibilità
+\usepackage[italian]{babel}
+\usepackage{amsmath, amssymb, amsthm} % Pacchetti matematici aggiunti
+
+\singlespacing
+
+\begin{document}
+
+  % Nessuna numerazione
+  \pagenumbering{gobble} 
+  
+  % PERCORSO AGGIORNATO: il file si trova nella cartella "parti"
+  \input{parti/frontespizio} 
+
+  \clearpage
+ 
+  % COMMENTATO: metti % davanti finché non crei il file ringraziamenti.tex
+  % \input{ringraziamenti} 
+  
+  \clearpage
+  \pagestyle{plain} 
+
+  \mainmatter
+
+  % Indice (eseguirà anche se i capitoli sono pochi)
+  \tableofcontents
+  \clearpage
+    
+  \begingroup
+    \renewcommand{\cleardoublepage}{} 
+    \renewcommand{\clearpage}{} 
+    
+    \titleformat{\chapter}
+      {\normalfont\Huge\bfseries}{\thechapter}{1em}{}
+      
+    \titlespacing*{\chapter}{0pt}{0.59in}{0.02in}
+    % ... (altri spacing) ...
+
+    % COMMENTATO: se non hai ancora sommario.tex
+    % \input{sommario}
+    
+    % PERCORSO AGGIORNATO: usi introduzione.tex nella cartella capitoli
+    \input{capitoli/introduzione} 
+
+    % COMMENTATI: i capitoli che non esistono ancora
+    % \input{capitoli/capitolo2} 
+    % \input{capitoli/capitolo3}
+      
+  \endgroup
+
+  % Bibliografia (commentala se il file .bib è vuoto o assente)
+  % \addcontentsline{toc}{chapter}{Bibliografia}
+  % \bibliographystyle{plain}
+  % \bibliography{biblio}
+
+\end{document}

@@ -1,0 +1,6 @@
+\babel@toc {italian}{}\relax 
+\babel@toc {italian}{}\relax 
+\contentsline {chapter}{\numberline {1}Introduzione}{2}{}%
+\contentsline {section}{\numberline {1.1}Contesto e Motivazioni}{2}{}%
+\contentsline {section}{\numberline {1.2}Definizione Formale del Problema}{2}{}%
+\contentsline {section}{\numberline {1.3}Obiettivi della Tesi}{3}{}%

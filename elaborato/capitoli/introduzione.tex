@@ -1,0 +1,59 @@
+\chapter{Introduzione}
+
+\section{Contesto e Motivazioni}
+
+Il diametro di un grafo, definito come la massima distanza tra ogni coppia di nodi, 
+rappresenta una metrica fondamentale per valutare l'efficienza di una rete.
+In ambiti quali le reti di comunicazione, i social network e i sistemi di calcolo multi-core,
+mantenere un diametro ridotto è cruciale per minimizzare la latenza e facilitare la diffusione delle informazioni.
+
+Una tecnica comune per migliorare la connettività di una rete esistente consiste nel "shortcutting", 
+ovvero nell'aggiunta di un insieme limitato di archi extra, chiamati scorciatoie (*shortcut edges*). 
+Il problema classico introdotto in letteratura è il \textit{Bounded Cardinality Minimum Diameter} (BCMD),
+il cui obiettivo è aggiungere al più $k$ archi per minimizzare il diametro risultante. 
+Tuttavia, le soluzioni ottimali per il BCMD tendono spesso a concentrare i nuovi archi su pochi nodi centrali,
+aumentandone drasticamente il grado. 
+
+In molte applicazioni reali, tale aumento è indesiderato poiché può causare sovraccarichi fisici o logistici.
+Per ovviare a questo problema, è stata introdotta la variante \textbf{BCMD-$\delta$}, 
+che impone un limite superiore $\delta$ all'aumento del grado di ogni singolo vertice.
+
+
+
+\section{Definizione Formale del Problema}
+
+In questo lavoro di tesi, estendiamo ulteriormente il problema BCMD-$\delta$ introducendo un vincolo di costo associato agli archi.
+Invece di limitare semplicemente il numero di archi aggiunti ($k$), consideriamo una funzione di costo generale e un budget totale.
+Chiameremo questo problema \textbf{Budgeted Diameter Minimization with Degree Constraints (BDM-DC)}.
+Sia $G = (V, E)$ un grafo non pesato, che può essere orientato o non orientato. Sia $E^c = (V \times V) \setminus E$ 
+l'insieme dei potenziali archi scorciatoia aggiungibili al grafo. 
+Definiamo i seguenti parametri di input:
+\begin{itemize}
+    \item Una funzione di costo $c: E^c \to \mathbb{R}^+$ che associa a ogni arco $(u, v) \in E^c$ un valore positivo.
+    Nel caso di nodi dotati di coordinate spaziali, $c(u, v)$ corrisponderà tipicamente alla distanza euclidea tra $u$ e $v$.
+    \item Un budget totale $B \in \mathbb{R}^+$.
+    \item Un limite di grado $\delta \in \mathbb{N}^+$,
+    che rappresenta il numero massimo di nuovi archi che possono essere incidenti a ciascun nodo.
+\end{itemize}
+L'obiettivo è trovare un insieme di archi $M \subseteq E^c$ che minimizzi il diametro del grafo aumentato $G' = (V, E \cup M)$. Formalmente, il problema può essere espresso come:
+
+$$ \min_{M \subseteq E^c} D(G') $$
+soggetto ai seguenti vincoli:
+
+\begin{enumerate}
+    \item \textbf{Vincolo di Budget:} La somma dei costi degli archi selezionati non deve superare $B$:
+    $$ \sum_{e \in M} c(e) \le B $$
+    
+    \item \textbf{Vincolo di Grado:} Per ogni vertice $v \in V$, l'incremento del suo grado nel grafo $G'$ rispetto al grafo originale $G$ deve essere al più $\delta$:
+    $$ deg_{G'}(v) - deg_G(v) \le \delta \quad \forall v \in V $$ [cite: 698]
+\end{enumerate}
+Il diametro $D(G')$ è definito come:
+$$ D(G') = \max_{u, v \in V} d_{G'}(u, v) $$ 
+dove $d_{G'}(u, v)$ è la lunghezza del cammino minimo tra i nodi $u$ e $v$ nel grafo $G'$.
+
+\section{Obiettivi della Tesi}
+
+L'obiettivo principale della ricerca è analizzare la complessità computazionale di questa variante e sviluppare algoritmi (esatti o euristici)
+in grado di fornire soluzioni di alta qualità in tempi ragionevoli. In particolare, studieremo come la variazione del budget $B$,
+definita proporzionalmente alle caratteristiche del dataset (es. in base al costo medio degli archi), influenzi la capacità di riduzione del 
+diametro sotto diversi vincoli di grado $\delta$.
