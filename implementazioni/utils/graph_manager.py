@@ -23,6 +23,79 @@ class GraphManager:
         for node in self.G.nodes():
             self.G.nodes[node]['pos'] = (np.random.uniform(0, 100), np.random.uniform(0, 100))
 
+    def generate_from_file(self,file_path):
+        try:
+            with open(file_path, 'r') as f:
+                first_line=f.readline().split()
+                if not first_line:
+                    raise ValueError("Il file è vuoto")
+                n= int(first_line[0])
+                m=int(first_line[1])
+                self.G.clear()
+                self.G.add_nodes_from(range(n))
+
+                for line in f:
+                    if line.strip():
+                        parts = line.split()
+                        u,v= int(parts[0]), int(parts[1])
+                        self.G.add_edge(u,v)
+                m_actual = self.G.number_of_edges()
+                print(f"Successo: Caricati {n} nodi e {m_actual} archi")
+        except FileNotFoundError:
+            print(f"Errore: Il file {file_path} non esiste")
+        except Exception as e:
+            print(f"Errore durante il caricamento : {e}")
+
+    def load_coordinates_from_file(self, file_path):
+        try:
+            with open(file_path, "r") as f:
+                count =0
+                for line in f:
+                    parts = line.split()
+                    if len(parts) >= 3:
+                        node_id = int(parts[0])
+                        x = float(parts[1])
+                        y= float (parts[2])
+                        if node_id in self.G.nodes:
+                            self.G.nodes[node_id]['pos'] = (x,y)
+                            count+=1
+                        else:
+                            print(f"Warning: nodo {node_id} trovato nel file.co ma non presente nel grafo")
+            print(f"Successo: Caricate coordinate per {count} nodi")
+        except FileNotFoundError:
+            print(f"Errore: Il file di coordinate {file_path} non esiste.")
+        except Exception as e:
+            print(f"Errore durante il caricamento coordinate: {e}")
+
+    def get_euclidean_cost(self, u, v):
+        coordinates_u = np.array(self.G.nodes[u]["pos"])
+        coordinates_v =np.array(self.G.nodes[v]["pos"])
+        return np.linalg.norm(coordinates_u - coordinates_v)
+
+    def get_research_budget(self, mode="average", factor=5.0):
+        """
+        Ritorna un budget B calcolato secondo criteri di ricerca: "average" o "diameter_based"
+        """
+        nodes = list(self.G.nodes())
+        potential_costs = []
+        # Campionamento degli archi potenziali (E^c)
+        # Se il grafo è grande, meglio campionare a caso per velocità
+        sample_size = min(1000, len(nodes) * (len(nodes)-1) // 2)
+        for _ in range(sample_size):
+            u, v = random.sample(nodes, 2)
+            if not self.G.has_edge(u, v):
+                potential_costs.append(self.get_euclidean_cost(u, v))
+                
+        avg_potential = np.mean(potential_costs)
+        
+        if mode == "average":
+            return avg_potential * factor
+        elif mode == "diameter_based":
+            # B = factor * costo dell'arco che copre il diametro attuale
+            perc = nx.periphery(self.G)
+            d_cost = self.get_euclidean_cost(perc[0], perc[-1])
+            return d_cost * factor
+    
     def draw_diameter(self, ax, pos):
         """
         Evidenzia il diametro del grafo.
@@ -76,7 +149,14 @@ class GraphManager:
         plt.tight_layout()
         plt.show()
 
+
 if __name__ == "__main__":
-    gm = GraphManager(directed=False)
-    gm.generate_random_with_coords(10, 0.3)
+    gm = GraphManager(False)
+    gm.generate_from_file("../datasets/simple_path/grafo.txt")
+    gm.load_coordinates_from_file("../datasets/simple_path/grafo.co")
+    print(f"Budget average: {gm.get_research_budget(factor=2)}")
+    print(f"Budget diameter_based: {gm.get_research_budget(mode="diameter_based",factor=2)}")
+    
+
     gm.visualize(show_diameter=True)
+    
