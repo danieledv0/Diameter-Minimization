@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1773061961.17014 "/home/daniele/Scrivania/tesi/Diameter-Minimization/elaborato/main.tex" "main.pdf" "main" 1773061961.36094 0
-  "/home/daniele/Scrivania/tesi/Diameter-Minimization/elaborato/main.tex" 1773056956.28396 1829 d65744bd7687cabb3a0f6ddd8e0dd7e3 ""
+["pdflatex"] 1773224346.05173 "/home/daniele/Scrivania/tesi/Diameter-Minimization/elaborato/main.tex" "main.pdf" "main" 1773224346.24066 0
+  "/home/daniele/Scrivania/tesi/Diameter-Minimization/elaborato/main.tex" 1773224066.91236 1463 e406959d0e3ffaf3d11188a087e1fa7d ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1136768653 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -87,10 +87,10 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1770816834 421312 f8b996e37181cb72c4559aefe75a80c8 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1769767268 3437285 ee37e7ef8cffa47c82c97a0b8a0cf41e ""
   "/usr/local/texlive/2025/texmf.cnf" 1769767240.35288 455 5b996dcaa0eb4ef14a83b026bc0a008c ""
-  "capitoli/introduzione.tex" 1773061961.01226 3739 d8826ed807f9960dc45a2b70f05e02c0 ""
-  "main.aux" 1773061961.33174 692 394fa42815e1e4aa1498a08b98db7522 "pdflatex"
-  "main.tex" 1773056956.28396 1829 d65744bd7687cabb3a0f6ddd8e0dd7e3 ""
-  "main.toc" 1773061961.33174 340 b1a5b089bb0d2f66f710f3673eda1d9e "pdflatex"
+  "capitoli/introduzione.tex" 1773224345.71096 3734 cd603b6a3a304f891b3b870fa14180fb ""
+  "main.aux" 1773224346.20978 692 394fa42815e1e4aa1498a08b98db7522 "pdflatex"
+  "main.tex" 1773224066.91236 1463 e406959d0e3ffaf3d11188a087e1fa7d ""
+  "main.toc" 1773224346.21078 340 b1a5b089bb0d2f66f710f3673eda1d9e "pdflatex"
   "parti/frontespizio.tex" 1773057169.07314 941 4c341a2ac07e5c7e8b4ad75de45e5172 ""
   "parti/marchio_unitrento_colore_it_202002.eps" 1581498201 222744 5d72016d4da94ab2e0e9c383b78b1960 ""
   (generated)

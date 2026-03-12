@@ -13,24 +13,32 @@ def greedy_solver(G: nx.Graph, delta, B, cost_func):
     while True:
         if not nx.is_connected(G_temp): break
         D_val = nx.diameter(G_temp) #diametro attuale
+        found_edge_to_add= False
         perc = nx.periphery(G_temp) #inisieme di nodi la cui eccentricità è uguale al diametro del grafo
-        u,v = perc[0], perc[-1]
-        cost = cost_func(u,v)
-        add_condition= (not (G_temp.has_edge(u,v)) and
+        for i in range(len(perc)):
+            for j in range(i+1, len(perc)):
+                u=perc[i]
+                v=perc[j]
+                cost = cost_func(u,v)
+                add_condition= (not (G_temp.has_edge(u,v)) and
                         current_budget - cost >= 0 and
                         added_degree[u] < delta and
                         added_degree[v] < delta
                         )
-        if add_condition:
-            print("true")
-            G_temp.add_edge(u,v)
-            M_added.append((u,v))
-            added_degree[u]+=1
-            added_degree[v]+=1
-            current_budget -= cost
-            if D_val < 2 : break #raggiunto il minimo possibile
-        else:
+                if add_condition:
+                    G_temp.add_edge(u,v)
+                    M_added.append((u,v))
+                    added_degree[u]+=1
+                    added_degree[v]+=1
+                    current_budget -= cost
+                    print(f"Aggiunto arco ({u} , {v}) - Costo: {cost:.2f}")
+                    found_edge_to_add= True
+                    break
+            if found_edge_to_add: break #raggiunto il minimo possibile
+        if not found_edge_to_add:
+            break
+        if D_val < 2:
             break
     elapse = time.time()-start_time
-    return M_added , D_val, elapse, 
+    return M_added , D_val, elapse,  current_budget
 

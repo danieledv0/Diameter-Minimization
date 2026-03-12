@@ -127,7 +127,8 @@ class GraphManager:
             )
         return d_value
 
-    def visualize(self, title="analisi grafo BMD-DC", show_diameter=False):
+
+    def visualize(self, title="analisi grafo BMD-DC", show_diameter=False, added_edges= None, budget = None):
         """
         Visualizza il grafo. Se show_diameter è True, viene evidenziato il diametro
         """
@@ -136,18 +137,37 @@ class GraphManager:
 
         # Disegno base (nodi e archi grigi trasparenti)
         nx.draw_networkx_edges(self.G, pos, edge_color='gray', alpha=0.3, ax=ax)
-        nx.draw_networkx_nodes(self.G, pos, node_color='lightblue', node_size=300, ax=ax)
+        #Disegno archi aggiunti
+        if added_edges:
+            nx.draw_networkx_edges(
+                self.G, pos, edgelist=added_edges, 
+                edge_color='green', width=1, label="Shortcuts Aggiunti", ax=ax
+            )
+            edge_labels= {}
+            for u, v in added_edges:
+                costo = self.get_euclidean_cost(u,v)
+                edge_labels[(u,v)] = f"{costo:.2f}"
+            nx.draw_networkx_edge_labels(
+                self.G, pos, 
+                edge_labels=edge_labels, 
+                font_color='green', 
+                font_size=12,
+                label_pos=0.5, # 0.5 è esattamente a metà dell'arco
+                ax=ax
+            )
+        nx.draw_networkx_nodes(self.G, pos, node_color='lightblue', node_size=500, ax=ax)
         nx.draw_networkx_labels(self.G, pos, font_size=10, ax=ax)
 
         d_text = ""
         if show_diameter:
             d_val = self.draw_diameter(ax, pos)
-            d_text = f"\nDiametro orginale: {d_val}"
+            d_text = f"\nDiametro attuale: {d_val}"
             ax.legend()
+        b_text= f"  Budget ({budget:.2f} )"
 
-        ax.set_title(title + d_text, fontsize=14, fontweight='bold')
+        ax.set_title(title + b_text + d_text, fontsize=14, fontweight='bold')
         plt.tight_layout()
-        plt.show()
+        #plt.show()
 
 
 if __name__ == "__main__":
