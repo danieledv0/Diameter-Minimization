@@ -8,6 +8,66 @@ class GraphManager:
         self.directed = directed
         self.G = nx.DiGraph() if directed else nx.Graph()
     
+    def generate_rgg(self, n, radius, bbox = (100.0,100.0), seed = 42, ensure_connected= True):
+        """ 
+        Genera Random Geometric Graph : n nodi disposti
+        uniformemente sul piano cartesiano, con archi tra coppie
+        a distanza <= radius
+        """
+        rng = np.random.default_rng(seed)
+        self.G = nx.Graph()
+
+        #Genero n coordinate casuali e uniformi
+        xs = rng.uniform(0, bbox[0],n)
+        ys = rng.uniform(0, bbox[1], n)
+        pos_array = np.column_stack([xs,ys])
+
+        for i in range(n):
+            self.G.add_node(i, pos=(float(xs[i]), float(ys[i])))
+        
+        #aggiungo archi tra nodi entro il raggio
+        for i in range(n):
+            diffs = pos_array[i+1:]-pos_array[i]
+            dists = np.linalg.norm(diffs, axis = 1)
+            neighbors = np.where(dists <= radius)[0] + (i+1)
+            for j in neighbors:
+                self.G.add_edge(i,int(j))
+
+        if ensure_connected:
+            while not nx.is_connected(self.G):
+                components = list(nx.connected_components(self.G))
+                best_u, best_v , best_dist = None, None, np.inf
+                for ci in range(len(components)):
+                    for cj in range(ci + 1, len(components)):
+                        sample_i = random.sample(list(components[ci]),
+                                                 min(40, len(components[ci])))
+                        sample_j = random.sample(list(components[cj]),
+                                                 min(40, len(components[cj])))
+                        for u in sample_i:
+                            for v in sample_j:
+                                d = self.get_euclidean_cost(u, v)
+                                if d < best_dist:
+                                    best_dist = d
+                                    best_u, best_v = u, v
+ 
+                self.G.add_edge(best_u, best_v)
+ 
+        self.G.graph["type"]   = "RGG"
+        self.G.graph["radius"] = radius
+        self.G.graph["bbox"]   = bbox
+
+
+    @staticmethod
+    def suggest_rgg_radius(n, bbox=(100.0, 100.0), factor=1.5):
+        """
+        Suggerisce un raggio per avere un RGG connesso con diametro non banale.
+        """
+        area = bbox[0] * bbox[1]
+        r_critical = np.sqrt(np.log(n) * area / (np.pi * n))
+        return round(factor * r_critical, 2)
+
+
+
     def generate_random_with_coords(self, n, p, seed=42):
         random.seed(seed)
         np.random.seed(seed)
@@ -89,11 +149,13 @@ class GraphManager:
         avg_potential = np.mean(potential_costs)
         
         if mode == "average":
+            print(f"Unità di misura del budget in mode average: {avg_potential}")
             return avg_potential * factor
         elif mode == "diameter_based":
             # B = factor * costo dell'arco che copre il diametro attuale
             perc = nx.periphery(self.G)
             d_cost = self.get_euclidean_cost(perc[0], perc[-1])
+            #print(f"Unità di misura del budget in mode diameter: {d_cost}")
             return d_cost * factor
     
     def draw_diameter(self, ax, pos):
@@ -134,6 +196,13 @@ class GraphManager:
         """
         pos = nx.get_node_attributes(self.G, 'pos')
         fig, ax = plt.subplots(figsize=(10, 8))
+        # ottieni il window manager
+        manager = plt.get_current_fig_manager()
+        # imposta posizione e dimensione: width x height + x + y
+        if not added_edges :
+            manager.window.wm_geometry("+100+100")
+        else:
+            manager.window.wm_geometry("+1300+100")
 
         # Disegno base (nodi e archi grigi trasparenti)
         nx.draw_networkx_edges(self.G, pos, edge_color='gray', alpha=0.3, ax=ax)

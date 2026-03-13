@@ -24,7 +24,6 @@ def get_peripheral_nodes(G:nx.Graph, tolerance= 1):
     """
     ecc = nx.eccentricity(G) 
     D = max(ecc.values())
-    D = max (ecc.values())
     res = []
     for v,e in ecc.items():
         if e>= D-tolerance:
@@ -42,21 +41,28 @@ def greedy_cost_aware(G: nx.Graph, delta, B, cost_func, peripheral_tolerance = 1
     D_current = compute_diameter(G_work)
 
     start_time = time.time()
-
     while True:
-        peri= get_peripheral_nodes(G_work, tolerance = 1) #nodi periferici o quasi
+        best_edge = None
+        best_efficiency= -np.inf
+        best_gain = 0
+        best_cost_val = np.inf
+        best_new_D = D_current
+        
+        peri= get_peripheral_nodes(G_work, peripheral_tolerance) #nodi periferici o quasi
+        #print(f"!!peri: {peri}")
         feasible_peri= [] #nodi periferici a cui si può aggiungere ancora un arco
         for i in range(len(peri)):
             u = peri[i]
             if added_degree[u] < delta:
                 feasible_peri.append(u)
+        #print(f"feasible_peri iniziale {feasible_peri}")
         if len(feasible_peri) < 2: #se trovo meno di due nodi periferici , considero anche altri
             for u in G_work.nodes():
                 if added_degree[u] < delta :
                     feasible_peri.append(u)
-
+        #print(f"feasible_peri dopo aggiunta nodi non periferici: {feasible_peri}")
         if len(feasible_peri) <2:
-            print("fine algoritmo, non ho più di due nodi fattibili")
+            #print("fine algoritmo, non ho più di due nodi fattibili")
             break
 
     
@@ -71,22 +77,19 @@ def greedy_cost_aware(G: nx.Graph, delta, B, cost_func, peripheral_tolerance = 1
                 if cost > current_budget:
                     continue
                 candidate_couples.append((u,v,cost))
+        #print(f"Coppie candidate : {candidate_couples}")
         if candidate_couples == []:
             print("Nessuna coppia  candidata nel budget disponibile ")
             break
 
-        best_edge = None
-        best_efficiency= -np.inf
-        best_gain = 0
-        best_cost_val = np.inf
-        best_new_D = D_current
-
         for u,v,cost in candidate_couples:
             new_D = simulate_diameter_after_edge(G_work, u, v)
+            #print(f"[{u}]->[{v}]  new D: {new_D}")
             gain = D_current - new_D  #calcolo quanto ci guadagnerei
-            if gain <=0:
+            if gain < 0:
                 continue
             efficiency = gain/cost
+            #print(f"[{u}]->[{v}]  efficiency: {efficiency}")
             if efficiency > best_efficiency:
                 best_efficiency = efficiency
                 best_edge = (u,v)
@@ -109,8 +112,7 @@ def greedy_cost_aware(G: nx.Graph, delta, B, cost_func, peripheral_tolerance = 1
         if D_current < 2:
             print("Diametro minimo raggiunto. stoppamo")
             break
+    #print("="*60)
     elapsed = time.time() - start_time
     return M_added, D_current, elapsed, current_budget
-
-
 

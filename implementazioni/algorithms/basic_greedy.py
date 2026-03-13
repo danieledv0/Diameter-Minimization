@@ -2,7 +2,7 @@ import networkx as nx
 import time
 import numpy as np
 
-def greedy_solver(G: nx.Graph, delta, B, cost_func):
+def greedy_basic_solver(G: nx.Graph, delta, B, cost_func):
     G_temp = G.copy()
     n= G_temp.number_of_nodes()
     M_added = [] #set di archi nuovi agiunti
