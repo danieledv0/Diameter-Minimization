@@ -2,131 +2,38 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+from loaders.rgg_generator import generate_rgg, suggest_rgg_radius, generate_random_with_coords
+from loaders.simple_graph_loader import load_graph_from_file, apply_coordinates
+from loaders.dimacs_loader import load_dimacs_graph , load_dimacs_coords
+
 
 class GraphManager:
     def __init__(self, directed=False):
         self.directed = directed
         self.G = nx.DiGraph() if directed else nx.Graph()
     
-    def generate_rgg(self, n, radius, bbox = (100.0,100.0), seed = 42, ensure_connected= True):
+    def create_rgg(self, n):
         """ 
         Genera Random Geometric Graph : n nodi disposti
         uniformemente sul piano cartesiano, con archi tra coppie
         a distanza <= radius
         """
-        rng = np.random.default_rng(seed)
-        self.G = nx.Graph()
+        radius = suggest_rgg_radius(n)
+        self.G = generate_rgg(n , radius)
+    
+    def generate_simple_from_file(self, graph_path, coord_path):
+        """
+        Carica grafo semplice dai file .txt e .co
+        """
+        self.G = load_graph_from_file(graph_path)
+        apply_coordinates(self.G, coord_path)
 
-        #Genero n coordinate casuali e uniformi
-        xs = rng.uniform(0, bbox[0],n)
-        ys = rng.uniform(0, bbox[1], n)
-        pos_array = np.column_stack([xs,ys])
-
-        for i in range(n):
-            self.G.add_node(i, pos=(float(xs[i]), float(ys[i])))
+    def generate_dimacs_graph(self, graph_path, coord_path):
+        self.G = load_dimacs_graph(graph_path)
+        count = load_dimacs_coords(self.G, coord_path)
+        print(f"Dataset caricato: {self.G.number_of_nodes()} nodi, "
+              f"{self.G.number_of_edges()} archi. Coordinate per {count} nodi.")
         
-        #aggiungo archi tra nodi entro il raggio
-        for i in range(n):
-            diffs = pos_array[i+1:]-pos_array[i]
-            dists = np.linalg.norm(diffs, axis = 1)
-            neighbors = np.where(dists <= radius)[0] + (i+1)
-            for j in neighbors:
-                self.G.add_edge(i,int(j))
-
-        if ensure_connected:
-            while not nx.is_connected(self.G):
-                components = list(nx.connected_components(self.G))
-                best_u, best_v , best_dist = None, None, np.inf
-                for ci in range(len(components)):
-                    for cj in range(ci + 1, len(components)):
-                        sample_i = random.sample(list(components[ci]),
-                                                 min(40, len(components[ci])))
-                        sample_j = random.sample(list(components[cj]),
-                                                 min(40, len(components[cj])))
-                        for u in sample_i:
-                            for v in sample_j:
-                                d = self.get_euclidean_cost(u, v)
-                                if d < best_dist:
-                                    best_dist = d
-                                    best_u, best_v = u, v
- 
-                self.G.add_edge(best_u, best_v)
- 
-        self.G.graph["type"]   = "RGG"
-        self.G.graph["radius"] = radius
-        self.G.graph["bbox"]   = bbox
-
-
-    @staticmethod
-    def suggest_rgg_radius(n, bbox=(100.0, 100.0), factor=1.5):
-        """
-        Suggerisce un raggio per avere un RGG connesso con diametro non banale.
-        """
-        area = bbox[0] * bbox[1]
-        r_critical = np.sqrt(np.log(n) * area / (np.pi * n))
-        return round(factor * r_critical, 2)
-
-
-
-    def generate_random_with_coords(self, n, p, seed=42):
-        random.seed(seed)
-        np.random.seed(seed)
-        self.G = nx.fast_gnp_random_graph(n, p, seed=seed, directed=self.directed)
-
-        if not self.directed:
-            while not nx.is_connected(self.G):
-                components = list(nx.connected_components(self.G))
-                u = random.choice(list(components[0]))
-                v = random.choice(list(random.choice(components[1:])))
-                self.G.add_edge(u, v)
-
-        for node in self.G.nodes():
-            self.G.nodes[node]['pos'] = (np.random.uniform(0, 100), np.random.uniform(0, 100))
-
-    def generate_from_file(self,file_path):
-        try:
-            with open(file_path, 'r') as f:
-                first_line=f.readline().split()
-                if not first_line:
-                    raise ValueError("Il file è vuoto")
-                n= int(first_line[0])
-                m=int(first_line[1])
-                self.G.clear()
-                self.G.add_nodes_from(range(n))
-
-                for line in f:
-                    if line.strip():
-                        parts = line.split()
-                        u,v= int(parts[0]), int(parts[1])
-                        self.G.add_edge(u,v)
-                m_actual = self.G.number_of_edges()
-                print(f"Successo: Caricati {n} nodi e {m_actual} archi")
-        except FileNotFoundError:
-            print(f"Errore: Il file {file_path} non esiste")
-        except Exception as e:
-            print(f"Errore durante il caricamento : {e}")
-
-    def load_coordinates_from_file(self, file_path):
-        try:
-            with open(file_path, "r") as f:
-                count =0
-                for line in f:
-                    parts = line.split()
-                    if len(parts) >= 3:
-                        node_id = int(parts[0])
-                        x = float(parts[1])
-                        y= float (parts[2])
-                        if node_id in self.G.nodes:
-                            self.G.nodes[node_id]['pos'] = (x,y)
-                            count+=1
-                        else:
-                            print(f"Warning: nodo {node_id} trovato nel file.co ma non presente nel grafo")
-            print(f"Successo: Caricate coordinate per {count} nodi")
-        except FileNotFoundError:
-            print(f"Errore: Il file di coordinate {file_path} non esiste.")
-        except Exception as e:
-            print(f"Errore durante il caricamento coordinate: {e}")
-
     def get_euclidean_cost(self, u, v):
         coordinates_u = np.array(self.G.nodes[u]["pos"])
         coordinates_v =np.array(self.G.nodes[v]["pos"])
@@ -240,12 +147,6 @@ class GraphManager:
 
 
 if __name__ == "__main__":
-    gm = GraphManager(False)
-    gm.generate_from_file("../datasets/simple_path/grafo.txt")
-    gm.load_coordinates_from_file("../datasets/simple_path/grafo.co")
-    print(f"Budget average: {gm.get_research_budget(factor=2)}")
-    print(f"Budget diameter_based: {gm.get_research_budget(mode="diameter_based",factor=2)}")
-    
-
-    gm.visualize(show_diameter=True)
-    
+    gm= GraphManager(False)
+    gm.generate_dimacs_graph("datasets/nyc_network/USA-road-d.NY.gr",
+                             "datasets/nyc_network/USA-road-d.NY.co")
