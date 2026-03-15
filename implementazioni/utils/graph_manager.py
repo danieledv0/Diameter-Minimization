@@ -5,6 +5,8 @@ import random
 from loaders.rgg_generator import generate_rgg, suggest_rgg_radius, generate_random_with_coords
 from loaders.simple_graph_loader import load_graph_from_file, apply_coordinates
 from loaders.dimacs_loader import load_dimacs_graph , load_dimacs_coords
+from .diameter_estimator import get_diameter_estimate
+
 
 
 class GraphManager:
@@ -33,11 +35,38 @@ class GraphManager:
         count = load_dimacs_coords(self.G, coord_path)
         print(f"Dataset caricato: {self.G.number_of_nodes()} nodi, "
               f"{self.G.number_of_edges()} archi. Coordinate per {count} nodi.")
-        
+
+    #Da usare per i grafi sintetici creati nel piano cartesiano
     def get_euclidean_cost(self, u, v):
         coordinates_u = np.array(self.G.nodes[u]["pos"])
         coordinates_v =np.array(self.G.nodes[v]["pos"])
         return np.linalg.norm(coordinates_u - coordinates_v)
+    
+    #Da usare per i grafi di reti reali del pianeta
+    def get_haversine_distance(self, u, v):
+        """
+        Calcola la distanza (in km) tra due nodi sulla superficie della Terra
+        usando le loro coordinate (longitudine, latitudine).
+        """
+        # Recupero coordinate (lon, lat)
+        lon1, lat1 = self.G.nodes[u]["pos"]
+        lon2, lat2 = self.G.nodes[v]["pos"]
+
+        # Raggio della Terra in km
+        R = 6371.0
+
+        # Conversione in radianti
+        phi1, phi2 = np.radians(lat1), np.radians(lat2)
+        dphi = np.radians(lat2 - lat1)
+        dlambda = np.radians(lon2 - lon1)
+
+        # Haversine
+        a = np.sin(dphi / 2)**2 + \
+            np.cos(phi1) * np.cos(phi2) * np.sin(dlambda / 2)**2
+        
+        c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+        
+        return R * c
 
     def get_research_budget(self, mode="average", factor=5.0):
         """
@@ -54,7 +83,6 @@ class GraphManager:
                 potential_costs.append(self.get_euclidean_cost(u, v))
                 
         avg_potential = np.mean(potential_costs)
-        
         if mode == "average":
             print(f"Unità di misura del budget in mode average: {avg_potential}")
             return avg_potential * factor
@@ -64,6 +92,11 @@ class GraphManager:
             d_cost = self.get_euclidean_cost(perc[0], perc[-1])
             #print(f"Unità di misura del budget in mode diameter: {d_cost}")
             return d_cost * factor
+        elif mode == "approx_diameter":
+            _,s,f = get_diameter_estimate(self.G)
+            d_cost = self.get_haversine_distance(s,f)
+            print(f"Unità di misura del budget in mode diameter: {d_cost}")
+            return d_cost*factor
     
     def draw_diameter(self, ax, pos):
         """

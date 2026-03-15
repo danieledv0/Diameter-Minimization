@@ -2,6 +2,7 @@ import networkx as nx
 import time
 import random
 import numpy as np
+from  utils.diameter_estimator import get_diameter_estimate
 
 def solve_greedy_2sweep(G : nx.Graph, delta, B, cost_func):
     """
@@ -43,8 +44,7 @@ def solve_greedy_2sweep(G : nx.Graph, delta, B, cost_func):
         else:
             break
     elapsed = time.time() - start_time
-
-    final_diameter = nx.diameter(G_temp)
+    final_diameter,_,_ = get_diameter_estimate(G_temp)
     return M_added, final_diameter, elapsed, current_budget
 
 

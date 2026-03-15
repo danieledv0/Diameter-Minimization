@@ -1,6 +1,6 @@
 import networkx as nx
 
-def load_dimacs_graph(file_path, directed = "False"):
+def load_dimacs_graph(file_path, directed = False):
     """
     Carica i grafi in formato DIMACS come grafi non diretti
     Ignora i pesi degli archi
@@ -35,7 +35,7 @@ def load_dimacs_coords(G, file_path):
                 longitude = float(parts[2])/ 1_000_000
                 latitude = float(parts[3]) / 1_000_000
                 if node_id in G:
-                    G.nodes[node_id]["pos"] = (longitude, latitude)
+                    G.nodes[node_id]["pos"] = (longitude, latitude)  #occhio che sono gradi di longitudine e latitudine
                     count += 1
 
     return count

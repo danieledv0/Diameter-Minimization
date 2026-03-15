@@ -1,11 +1,13 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 from algorithms.basic_greedy import greedy_basic_solver
 from algorithms.greedy_cost_aware import greedy_cost_aware
 from algorithms.optimal_backtrack import solve_optimal_backtracking
 from algorithms.greedy_2sweep import solve_greedy_2sweep
 from utils.graph_manager import GraphManager
+from utils.diameter_estimator import get_diameter_estimate
 
 def run_multiple_experiments_with_graph():
     gm= GraphManager()
@@ -116,10 +118,20 @@ def run_big_experiment():
     gm= GraphManager(False)
     gm.generate_dimacs_graph("datasets/nyc_network/USA-road-d.NY.gr",
                              "datasets/nyc_network/USA-road-d.NY.co")
-    budget = gm.get_research_budget(mode = "diameter_based", factor = 3)
-    print(f"Baudget: {budget}")
-    cost_fn = gm.get_euclidean_cost
+    D , s, f= get_diameter_estimate(gm.G)
+    print(f" diametro iniziale stimato: {D}")
+
+    budget = gm.get_research_budget(mode = "approx_diameter", factor = 20)
+    print(f"Budget: {budget:.2f}")
+    cost_fn = gm.get_haversine_distance
     delta = 1 #Matching
+
+    M,D_final, time, residual_budget = solve_greedy_2sweep(gm.G, delta, budget, cost_fn)
+
+    print(f"greedy_2sweep ha eseguito in {time} secondi")
+    print(f"greedy_2sweep ha aggiunto questi shortcut edges: {M}")
+    print(f"il diametro finale raggiunto è D = {D_final:.2f}")
+    print(f"Ho ancora disponibile un budget pari a {residual_budget} ")
 
 if __name__ == "__main__":
     #run_experiment()
